@@ -1401,3 +1401,62 @@ function esportaDipendenti() {
     
     alert('Esportazione completata!');
 }
+
+const container = document.getElementById('lista-dipendenti');
+
+fetch('/api/utenti')
+  .then(response => response.json())
+  .then(utenti => {
+    if (utenti.length === 0) {
+      container.innerHTML = '<p>Nessun dipendente trovato.</p>';
+      return;
+    }
+
+    let html = `<table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Ruolo</th>
+          <th>Email</th>
+          <th>Telefono</th>
+          <th>Data Assunzione</th>
+          <th>Scadenza Contratto</th>
+          <th>Ore Settimanali</th>
+          <th>Ore Giornaliere</th>
+          <th>Stato Contratto</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    utenti.forEach(u => {
+      html += `<tr>
+        <td>${u.nome || ''}</td>
+        <td>${u.ruolo || ''}</td>
+        <td>${u.email || ''}</td>
+        <td>${u.telefono || ''}</td>
+        <td>${u.data_assunzione ? new Date(u.data_assunzione).toLocaleDateString() : ''}</td>
+        <td>${u.scadenza_contratto ? new Date(u.scadenza_contratto).toLocaleDateString() : ''}</td>
+        <td>${u.ore_settimanali || ''}</td>
+        <td>${u.ore_giornaliere || ''}</td>
+        <td>${u.stato_contratto || ''}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+
+    container.innerHTML = html;
+  })
+  .catch(err => {
+    container.innerHTML = '<p>Errore nel caricamento dei dipendenti.</p>';
+    console.error(err);
+  });
+function aggiornaRichieste() {
+    const richieste = document.getElementById('richieste-personale').value.trim();
+    
+    if (!richieste) {
+        alert('Inserisci le richieste del personale.');
+        return;
+    }
+    
+    richiestePersonale = richieste;
+    localStorage.setItem(`richieste_${utenteCorrente.id}`, richieste);

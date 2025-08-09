@@ -274,6 +274,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tabella-dipendenti">
+                                    <div id="lista-dipendenti"></div>
                                     <!-- I dipendenti verranno inseriti qui dinamicamente -->
                                 </tbody>
                             </table>
@@ -558,5 +559,26 @@
 
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/app.js"></script>
+
+    <script>
+        // Prendiamo l’elemento dove vogliamo mostrare la lista utenti
+        const container = document.getElementById('lista-utenti');
+
+        // Facciamo la chiamata al server per prendere gli utenti
+        fetch('/api/utenti')
+            .then(response => response.json())  // convertiamo la risposta in JSON
+            .then(utenti => {
+            utenti.forEach(u => {
+                const p = document.createElement('p');
+                p.textContent = `${u.nome} - ${u.ruolo}`;
+                container.appendChild(p);
+            });
+            })
+            .catch(error => {
+            console.error('Errore nel caricamento degli utenti:', error);
+            container.textContent = 'Errore nel caricamento degli utenti';
+            });
+    </script>
+
 </body>
 </html>
