@@ -269,6 +269,11 @@ function resetModalitaTest() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    caricaDipendentiDaServer();
+});
+// Funzione per caricare i dipendenti dal server
+
 // Funzioni di navigazione
 function mostraHome() {
     document.getElementById('pagina-login').style.display = 'none';
@@ -315,7 +320,7 @@ function mostraDashboard() {
     }
     
     // Carica dipendenti
-    caricaDipendenti();
+    caricaDipendentiDaServer();
     document.getElementById('dashboard-dipendenti').textContent = dipendenti.length;
     
     // Carica periodo salvato
@@ -793,7 +798,7 @@ function mostraGestioneDipendenti() {
     document.getElementById('pagina-dipendenti').style.display = 'block';
     
     // Carica dipendenti salvati
-    caricaDipendenti();
+    caricaDipendentiDaServer();
     
     // Aggiorna riepilogo
     aggiornaRiepilogo();
@@ -806,7 +811,7 @@ function mostraGestioneDipendenti() {
 }
 
 // Funzione per caricare dipendenti
-function caricaDipendenti() {
+function caricaDipendentiDaServer() {
     const dipendentiSalvati = localStorage.getItem(`dipendenti_${utenteCorrente.id}`);
     if (dipendentiSalvati) {
         dipendenti = JSON.parse(dipendentiSalvati);
@@ -1443,7 +1448,7 @@ function importaDipendenti() {
             });
             
             salvaDipendenti();
-            caricaDipendenti();
+            caricaDipendentiDaServer();
             aggiornaListaDipendenti();
             aggiornaStatistiche();
             
@@ -1535,5 +1540,30 @@ function aggiornaListaDipendenti() {
         tr.appendChild(azioniTd);
 
         tbody.appendChild(tr);
+    });
+}
+
+function caricaDipendentiDaServer() {
+  fetch('/api/utenti')
+    .then(response => response.json())
+    .then(data => {
+      dipendenti = data.map(u => ({
+        id: u.id,
+        nome: u.nome || '',
+        cognome: '',  // se il cognome non c’è nel DB, puoi lasciarlo vuoto
+        dataAssunzione: u.data_assunzione || '',
+        scadenzaContratto: u.scadenza_contratto || null,
+        oreSettimanali: u.ore_settimanali || 0,
+        oreGiornaliere: u.ore_giornaliere || 0,
+        lavoroSolo: null,
+        preferenzaTurno: null,
+        dataInserimento: new Date().toISOString()
+      }));
+      aggiornaListaDipendenti();
+      aggiornaStatistiche();
+    })
+    .catch(err => {
+      console.error('Errore nel caricamento dipendenti:', err);
+      alert('Errore nel caricamento dei dipendenti dal server');
     });
 }
