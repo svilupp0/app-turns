@@ -274,7 +274,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="tabella-dipendenti">
-                                    <div id="lista-dipendenti"></div>
                                     <!-- I dipendenti verranno inseriti qui dinamicamente -->
                                 </tbody>
                             </table>
@@ -561,23 +560,28 @@
     <script src="assets/js/app.js"></script>
 
     <script>
-        // Prendiamo l’elemento dove vogliamo mostrare la lista utenti
-        const container = document.getElementById('lista-utenti');
-
-        // Facciamo la chiamata al server per prendere gli utenti
+                // Chiamata al server per prendere gli utenti dal DB
         fetch('/api/utenti')
-            .then(response => response.json())  // convertiamo la risposta in JSON
-            .then(utenti => {
-            utenti.forEach(u => {
-                const p = document.createElement('p');
-                p.textContent = `${u.nome} - ${u.ruolo}`;
-                container.appendChild(p);
+        .then(response => response.json())  // trasforma la risposta in JSON
+        .then(dipendenti => {
+            const container = document.getElementById('lista-dipendenti');
+            container.innerHTML = ''; // svuota il contenitore prima di riempirlo
+
+            // Per ogni dipendente crea una riga di testo e la aggiunge
+            dipendenti.forEach(d => {
+            const div = document.createElement('div');
+            div.textContent = d.nome + ' - ' + d.ruolo;
+            container.appendChild(div);
             });
-            })
-            .catch(error => {
-            console.error('Errore nel caricamento degli utenti:', error);
-            container.textContent = 'Errore nel caricamento degli utenti';
-            });
+
+            if (dipendenti.length === 0) {
+            container.textContent = 'Nessun dipendente trovato.';
+            }
+        })
+        .catch(err => {
+            console.error('Errore caricamento dipendenti:', err);
+            document.getElementById('lista-dipendenti').textContent = 'Errore nel caricamento.';
+        });
     </script>
 
 </body>

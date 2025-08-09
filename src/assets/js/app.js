@@ -1402,61 +1402,138 @@ function esportaDipendenti() {
     alert('Esportazione completata!');
 }
 
-const container = document.getElementById('lista-dipendenti');
-
-fetch('/api/utenti')
-  .then(response => response.json())
-  .then(utenti => {
-    if (utenti.length === 0) {
-      container.innerHTML = '<p>Nessun dipendente trovato.</p>';
-      return;
-    }
-
-    let html = `<table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Ruolo</th>
-          <th>Email</th>
-          <th>Telefono</th>
-          <th>Data Assunzione</th>
-          <th>Scadenza Contratto</th>
-          <th>Ore Settimanali</th>
-          <th>Ore Giornaliere</th>
-          <th>Stato Contratto</th>
-        </tr>
-      </thead>
-      <tbody>`;
-
-    utenti.forEach(u => {
-      html += `<tr>
-        <td>${u.nome || ''}</td>
-        <td>${u.ruolo || ''}</td>
-        <td>${u.email || ''}</td>
-        <td>${u.telefono || ''}</td>
-        <td>${u.data_assunzione ? new Date(u.data_assunzione).toLocaleDateString() : ''}</td>
-        <td>${u.scadenza_contratto ? new Date(u.scadenza_contratto).toLocaleDateString() : ''}</td>
-        <td>${u.ore_settimanali || ''}</td>
-        <td>${u.ore_giornaliere || ''}</td>
-        <td>${u.stato_contratto || ''}</td>
-      </tr>`;
-    });
-
-    html += '</tbody></table>';
-
-    container.innerHTML = html;
-  })
-  .catch(err => {
-    container.innerHTML = '<p>Errore nel caricamento dei dipendenti.</p>';
-    console.error(err);
-  });
-function aggiornaRichieste() {
+function importaDipendenti() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.csv';
+    
+    fileInput.onchange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const csv = e.target.result;
+            const righe = csv.split('\n').map(riga => riga.split(','));
+            if (righe.length < 2) {
+                alert('File CSV non valido o vuoto.');
+                return;
+            }
+            
+            // Ignora intestazione
+            righe.shift();
+            
+            righe.forEach(riga => {
+                if (riga.length < 6) return; // Salta righe incomplete
+                
+                const nuovoDipendente = {
+                    id: Date.now() + Math.random(), // Genera ID unico
+                    nome: riga[0].trim(),
+                    cognome: riga[1].trim(),
+                    dataAssunzione: new Date(riga[2].trim()).toISOString(),
+                    scadenzaContratto: riga[3].trim() === 'Indeterminato' ? null : new Date(riga[3].trim()).toISOString(),
+                    oreSettimanali: parseInt(riga[4].trim()),
+                    oreGiornaliere: parseInt(riga[5].trim()),
+                    lavoroSolo: riga[6].trim() || null,
+                    preferenzaTurno: riga[7].trim() || null,
+                    dataInserimento: new Date().toISOString()
+                };
+                
+                dipendenti.push(nuovoDipendente);
+            });
+            
+            salvaDipendenti();
+            caricaDipendenti();
+            aggiornaListaDipendenti();
+            aggiornaStatistiche();
+            
+            alert('Importazione completata con successo!');
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    fileInput.click();
+}
+// Funzione per gestire richieste del personale
+function gestisciRichieste() {  
+    document.getElementById('pagina-dashboard').style.display = 'none';
+    document.getElementById('pagina-richiedi').style.display = 'block';
+    
+    // Carica richieste salvate
+    caricaRichieste();
+    
+    // Aggiorna statistiche
+    aggiornaStatisticheDashboard();
+}
+function salvaRichieste() {
     const richieste = document.getElementById('richieste-personale').value.trim();
     
-    if (!richieste) {
-        alert('Inserisci le richieste del personale.');
+    // Validazione
+    if (richieste === '') {
+        alert('Inserisci almeno una richiesta.');
         return;
-    }
-    
+    }  
+    // Salva richieste nel localStorage
+    localStorage.setItem(`richieste_${utenteCorrente.id}`, richieste);  
     richiestePersonale = richieste;
-    localStorage.setItem(`richieste_${utenteCorrente.id}`, richieste);
+    const righe = richieste.split('\n').filter(riga => riga.trim() !== '').length;
+    document.getElementById('richieste-pendenti').textContent = righe;
+    alert('Richieste salvate con successo!');
+}
+
+function aggiornaListaDipendenti() {
+    const tbody = document.getElementById('tabella-dipendenti');
+    tbody.innerHTML = ''; // svuota la tabella
+
+    if (dipendenti.length === 0) {
+        document.getElementById('nessun-dipendente').style.display = 'block';
+        return;
+    } else {
+        document.getElementById('nessun-dipendente').style.display = 'none';
+    }
+
+    dipendenti.forEach(dip => {
+        const tr = document.createElement('tr');
+
+        // Cella Nome e Cognome
+        const nomeCognomeTd = document.createElement('td');
+        nomeCognomeTd.textContent = dip.nome + ' ' + dip.cognome;
+        tr.appendChild(nomeCognomeTd);
+
+        // Data Assunzione
+        const dataAssunzioneTd = document.createElement('td');
+        dataAssunzioneTd.textContent = dip.dataAssunzione ? new Date(dip.dataAssunzione).toLocaleDateString() : '';
+        tr.appendChild(dataAssunzioneTd);
+
+        // Scadenza Contratto
+        const scadenzaTd = document.createElement('td');
+        scadenzaTd.textContent = dip.scadenzaContratto ? new Date(dip.scadenzaContratto).toLocaleDateString() : 'Indeterminato';
+        tr.appendChild(scadenzaTd);
+
+        // Ore Settimanali
+        const oreSettTd = document.createElement('td');
+        oreSettTd.textContent = dip.oreSettimanali || '';
+        tr.appendChild(oreSettTd);
+
+        // Ore Giornaliere
+        const oreGiorTd = document.createElement('td');
+        oreGiorTd.textContent = dip.oreGiornaliere || '';
+        tr.appendChild(oreGiorTd);
+
+        // Stato Contratto (puoi personalizzare)
+        const statoTd = document.createElement('td');
+        statoTd.textContent = dip.statoContratto || '-';
+        tr.appendChild(statoTd);
+
+        // Azioni (ad es. modifica e elimina)
+        const azioniTd = document.createElement('td');
+        azioniTd.innerHTML = `
+            <button class="btn btn-sm btn-warning me-2" onclick="modificaDipendente(${dip.id})">Modifica</button>
+            <button class="btn btn-sm btn-danger" onclick="eliminaDipendente(${dip.id})">Elimina</button>
+        `;
+        tr.appendChild(azioniTd);
+
+        tbody.appendChild(tr);
+    });
+}
