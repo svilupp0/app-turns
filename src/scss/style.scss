@@ -1,0 +1,90 @@
+@import "../../node_modules/bootstrap/scss/bootstrap";
+
+// Stili personalizzati per l'app
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667ad3 0%, #a9e5be 100%);
+    min-height: 100vh;
+}
+
+.container-fluid {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+// Stili per i bottoni
+.btn {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border-width: 2px;
+    
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+// Stili per le icone
+.bi {
+    color: inherit;
+}
+
+// Stili per la card
+.card {
+    border: none;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+// Stili per l'header
+.bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+// Stili per il testo
+.text-primary {
+    color: #007bff !important;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+    
+    .btn {
+        padding: 1rem !important;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+
+// Animazioni
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.6s ease-out;
+}
+
+// Stili per il messaggio informativo
+.bg-light {
+    background-color: rgba(248, 249, 250, 0.8) !important;
+    border-left: 4px solid #007bff;
+}
