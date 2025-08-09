@@ -1544,13 +1544,16 @@ function aggiornaListaDipendenti() {
 }
 
 function caricaDipendentiDaServer() {
-  fetch('/api/utenti')
-    .then(response => response.json())
+  fetch('http://localhost:3000/api/utenti')
+    .then(response => {
+      if (!response.ok) throw new Error(`Errore HTTP: ${response.status}`);
+      return response.json();
+    })    
     .then(data => {
       dipendenti = data.map(u => ({
         id: u.id,
         nome: u.nome || '',
-        cognome: '',  // se il cognome non c’è nel DB, puoi lasciarlo vuoto
+        cognome: u.cognome || '',
         dataAssunzione: u.data_assunzione || '',
         scadenzaContratto: u.scadenza_contratto || null,
         oreSettimanali: u.ore_settimanali || 0,
